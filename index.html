@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimm Gravity — グリム重力脱出</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="ui">
+    <div id="hud">
+      <span id="stageName"></span>
+      <span id="moveCount">moves: 0</span>
+      <span id="coinCount">🪙 0</span>
+      <button id="titleBtn">🏠 タイトル</button>
+    </div>
+    <div id="gravityIndicator">
+      <div id="gravArrow">↓</div>
+      <div id="gravLabel">重力</div>
+    </div>
+    <div id="touchControls">
+      <div id="dpad">
+        <button class="dpad-btn dpad-up"   data-dir="UP">↑</button>
+        <button class="dpad-btn dpad-left" data-dir="LEFT">←</button>
+        <button class="dpad-btn dpad-right" data-dir="RIGHT">→</button>
+        <button class="dpad-btn dpad-down" data-dir="DOWN">↓</button>
+        <div class="dpad-center">重力</div>
+      </div>
+      <div id="actionBtns">
+        <button id="undoBtn" class="action-btn">↩️<span>戻る</span></button>
+        <button id="resetBtn" class="action-btn">🔄<span>リセット</span></button>
+      </div>
+    </div>
+  </div>
+  <div id="overlay" class="hidden">
+    <div id="overlayBox">
+      <div id="overlayTitle"></div>
+      <div id="overlayText"></div>
+      <button id="overlayBtn"></button>
+      <button id="overlayShopBtn" class="hidden">🛍️ スキンショップ</button>
+      <button id="overlayTitleBtn" class="hidden">🏠 タイトルへ戻る</button>
+    </div>
+  </div>
+  <div id="shopScreen" class="hidden">
+    <div id="shopBox">
+      <div id="shopHeader">
+        <div id="shopTitle">🛍️ スキンショップ</div>
+        <div id="shopCoins">🪙 0</div>
+      </div>
+      <div id="shopGrid"></div>
+      <button id="shopCloseBtn">閉じる</button>
+    </div>
+  </div>
+  <div id="codexScreen" class="hidden">
+    <div id="codexBox">
+      <div id="codexHeader">
+        <div id="codexTitle">📜 称号図鑑</div>
+        <div id="codexProgress">獲得済み: 0 / 0</div>
+      </div>
+      <div id="codexReward"></div>
+      <div id="codexGrid"></div>
+      <button id="codexCloseBtn">閉じる</button>
+    </div>
+  </div>
+  <div id="storyScreen" class="hidden">
+    <div id="storyBgGlow"></div>
+    <div id="storyStageLeft" class="story-char hidden">
+      <div class="story-char-icon"></div>
+    </div>
+    <div id="storyStageRight" class="story-char hidden">
+      <div class="story-char-icon"></div>
+    </div>
+    <div id="storyBox">
+      <div id="storyNameTag" class="hidden"></div>
+      <div id="storyText"></div>
+      <div id="storyNextHint">クリックして進む ▶</div>
+    </div>
+    <button id="storySkipBtn">スキップ ✕</button>
+  </div>
+  <div id="titleScreen">
+    <div id="titleContent">
+      <div id="titleLogo">
+        <div class="logo-line">GRIMM</div>
+        <div class="logo-line logo-line2">GRAVITY</div>
+        <div class="logo-sub">グリム重力脱出パズル</div>
+      </div>
+      <div id="titleStory">
+        魔女の呪いで立方体の迷宮に閉じ込められた。<br>
+        重力を操り、出口を目指せ。
+      </div>
+      <button id="startBtn">冒険を始める</button>
+      <div id="continuePanel" class="hidden">
+        <div id="continueLabel">― ステージを選ぶ ―</div>
+        <div id="stageSelectGrid"></div>
+      </div>
+      <button id="shopBtn">🛍️ スキンショップ</button>
+      <button id="codexBtn">📜 称号図鑑</button>
+      <div id="controls">
+        <div class="ctrl-row"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> または <kbd>A</kbd><kbd>W</kbd><kbd>D</kbd><kbd>S</kbd> — 重力の向きを変える</div>
+        <div class="ctrl-row"><kbd>Z</kbd> — 1手だけ前に戻る &nbsp; <kbd>R</kbd> — ステージを最初からやり直す</div>
+        <div class="ctrl-row touch-hint">📱 スマホでは画面の十字ボタンかスワイプで操作できます</div>
+      </div>
+    </div>
+    <div id="titleParticles"></div>
+  </div>
+  <!--
+    読み込み順序（依存関係）:
+      1. levels.js   — T, DIRS, STAGES を定義（他の全ファイルが参照）
+      2. story.js    — CHARACTERS, シナリオ定義（logic.js が参照）
+      3. renderer.js — canvas / ctx / render 系を定義（logic.js が呼び出す）
+      4. logic.js    — state / gameLoop など。levels & renderer & story に依存
+  -->
+  <script src="levels.js"></script>
+  <script src="story.js"></script>
+  <script src="renderer.js"></script>
+  <script src="logic.js"></script>
+</body>
+</html>
