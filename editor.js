@@ -52,9 +52,31 @@ function initEditor() {
   document.getElementById('importBtn').onclick = importStage;
   document.getElementById('testPlayBtn').onclick = startTestPlay;
   document.getElementById('editorCloseBtn').onclick = closeEditorAndReturnTitle;
+  document.getElementById('editPanelToggleBtn').onclick = toggleEditPanel;
   
   // テストプレイHUDの「エディットに戻る」ボタン
   document.getElementById('exitTestBtn').onclick = stopTestPlay;
+
+  // ステージ作成中は移動用のタッチコントロールは不要なので隠す
+  document.getElementById('touchControls').classList.add('hidden');
+
+  // パネルを開いた状態で表示
+  document.getElementById('editPanel').classList.remove('hidden');
+  document.getElementById('editPanelToggleBtn').classList.remove('hidden');
+  document.getElementById('editPanelToggleBtn').classList.add('panel-open');
+}
+
+// エディタの左パネルを開閉する（編集モードのまま、キャンバスを広く使いたい時用）
+function toggleEditPanel() {
+  const panel = document.getElementById('editPanel');
+  const toggleBtn = document.getElementById('editPanelToggleBtn');
+  const willOpen = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !willOpen);
+  toggleBtn.classList.toggle('panel-open', willOpen);
+  toggleBtn.textContent = willOpen ? '☰' : '✕';
+  if (state.isEditorMode && !state.isTestPlay) {
+    fitCanvasForEditor();
+  }
 }
 
 function buildPaletteUI() {
@@ -128,7 +150,10 @@ function changeTheme() {
 function fitCanvasForEditor() {
   const cols = editGrid[0].length;
   const rows = editGrid.length;
-  const maxW = window.innerWidth - 360; // 左側パネル(320px) + 余白
+  const panel = document.getElementById('editPanel');
+  const panelOpen = !panel.classList.contains('hidden');
+  const sideWidth = panelOpen ? panel.getBoundingClientRect().width : 0;
+  const maxW = window.innerWidth - sideWidth - 40; // パネル幅 + 余白
   const maxH = window.innerHeight - 80;
   const cellW = Math.floor(maxW / cols);
   const cellH = Math.floor(maxH / rows);
@@ -143,8 +168,8 @@ function fitCanvasForEditor() {
   state.cols = cols;
   state.rows = rows;
   
-  // 中央寄せ（ただしエディタパネルの右側領域で）
-  const leftOffset = 340 + Math.floor((maxW - w) / 2);
+  // 中央寄せ（パネルが開いている場合はその右側領域で）
+  const leftOffset = sideWidth + 20 + Math.floor((maxW - w) / 2);
   const topOffset = Math.floor((window.innerHeight - h) / 2);
   
   canvas.style.left = leftOffset + 'px';
@@ -197,6 +222,8 @@ function closeEditorAndReturnTitle() {
   state.isEditorMode = false;
   state.isTestPlay = false;
   document.getElementById('editPanel').classList.add('hidden');
+  document.getElementById('editPanelToggleBtn').classList.add('hidden');
+  document.getElementById('touchControls').classList.remove('hidden');
   goToTitle();
 }
 
@@ -217,8 +244,10 @@ function startTestPlay() {
   
   // UI切り替え
   document.getElementById('editPanel').classList.add('hidden');
+  document.getElementById('editPanelToggleBtn').classList.add('hidden');
   document.getElementById('exitTestBtn').classList.remove('hidden');
   document.getElementById('titleBtn').classList.add('hidden');
+  document.getElementById('touchControls').classList.remove('hidden');
   
   state.isTestPlay = true;
   state.gameStarted = true;
@@ -267,6 +296,10 @@ function stopTestPlay() {
   document.getElementById('exitTestBtn').classList.add('hidden');
   document.getElementById('titleBtn').classList.remove('hidden');
   document.getElementById('editPanel').classList.remove('hidden');
+  document.getElementById('editPanelToggleBtn').classList.remove('hidden');
+  document.getElementById('editPanelToggleBtn').classList.add('panel-open');
+  document.getElementById('editPanelToggleBtn').textContent = '✕';
+  document.getElementById('touchControls').classList.add('hidden');
   
   // エディタ用のキャンバスサイズ・位置に再フィット
   state.isEditorMode = true;

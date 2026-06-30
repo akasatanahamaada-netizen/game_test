@@ -892,6 +892,10 @@ function goToTitle() {
   document.getElementById('editPanel').classList.add('hidden');
   document.getElementById('exitTestBtn').classList.add('hidden');
   document.getElementById('titleBtn').classList.remove('hidden');
+  const ept = document.getElementById('editPanelToggleBtn');
+  if (ept) ept.classList.add('hidden');
+  const tc = document.getElementById('touchControls');
+  if (tc) tc.classList.remove('hidden');
   const ts = document.getElementById('titleScreen');
   ts.style.display = '';
   ts.classList.remove('fade-out');

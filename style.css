@@ -895,6 +895,7 @@ kbd {
   gap: 18px;
   pointer-events: none;
 }
+#touchControls.hidden { display: none; }
 
 /* ── D-pad ── */
 #dpad {
@@ -1142,6 +1143,32 @@ kbd {
   transform: translateX(-320px);
   display: block !important; /* アニメーションのために表示自体は残すが隠す */
   pointer-events: none;
+}
+
+/* ── エディタパネルの開閉トグルボタン ── */
+#editPanelToggleBtn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 160;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  border: 1px solid #a855f7;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.5);
+  transition: left 0.3s ease;
+}
+#editPanelToggleBtn.hidden { display: none; }
+#editPanelToggleBtn.panel-open { left: 336px; }
+
+@media (max-width: 700px) {
+  #editPanel { width: 88vw; max-width: 340px; }
+  #editPanel.hidden { transform: translateX(-100vw); }
+  #editPanelToggleBtn.panel-open { left: calc(88vw + 12px); }
 }
 
 .edit-panel-box {
