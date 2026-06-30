@@ -386,7 +386,7 @@ function isPassable(t) { return t === T.EMPTY || t === T.KEY || t === T.GOAL || 
 //  Stage loading
 // ================================================================
 function loadStage(idx) {
-  const s = STAGES[idx];
+  const s = getStageData(idx);
   state.stage = idx;
   state.grid = deepCopy(s.grid);
   state.rows = state.grid.length;
@@ -527,7 +527,7 @@ function changeGravity(dir) {
 
 function checkGoal() {
   const p = state.playerPos;
-  const s = STAGES[state.stage];
+  const s = getStageData(state.stage);
   if (s.doorTarget) {
     return p.x === s.doorTarget.x && p.y === s.doorTarget.y;
   }
@@ -554,8 +554,8 @@ function undoMove() {
 //  HUD & UI helpers
 // ================================================================
 function updateHUD() {
-  document.getElementById('stageName').textContent =
-    STAGES[state.stage].icon + ' ' + STAGES[state.stage].name;
+  const s = getStageData(state.stage);
+  document.getElementById('stageName').textContent = s.icon + ' ' + s.name;
   document.getElementById('moveCount').textContent = 'moves: ' + state.moves;
 }
 
@@ -1007,7 +1007,7 @@ window.addEventListener('resize', () => {
   if (state.gameStarted) {
     fitCanvas();
   } else if (state.isEditorMode) {
-    fitCanvasForEditor();
+    refreshEditorCanvas();
   }
 });
 

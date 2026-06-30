@@ -46,7 +46,7 @@ function roundRect(ctx, x, y, w, h, r) {
 function drawCell(x, y, type, cs) {
   const px = x * cs;
   const py = y * cs;
-  const s = STAGES[state.stage];
+  const s = getStageData(state.stage);
   const pal = s.palette;
 
   if (type === T.EMPTY) return;
@@ -238,7 +238,7 @@ function drawCell(x, y, type, cs) {
 // ================================================================
 function drawPlayer(cs) {
   const bob = Math.sin(time * 0.12) * 2;
-  const s = STAGES[state.stage];
+  const s = getStageData(state.stage);
   const pal = s.palette;
 
   ctx.save();
@@ -704,7 +704,7 @@ function drawPlayerCat(cs, bob) {
 // ================================================================
 function render() {
   const cs = state.cellSize;
-  const s = STAGES[state.stage];
+  const s = getStageData(state.stage);
   const pal = s.palette;
 
   ctx.fillStyle = pal.bg;
@@ -834,7 +834,7 @@ function drawWall(type, cs) {
   // 対応するテーマ描画が無いため、エディタで選択中のテーマ(currentThemeIdx)
   // にフォールバックする。
   let themeIdx = state.stage;
-  if (themeIdx >= 5 || themeIdx < 0) {
+  if (themeIdx >= TEST_STAGE_INDEX || themeIdx < 0) {
     themeIdx = (typeof currentThemeIdx !== 'undefined') ? currentThemeIdx : 0;
   }
 

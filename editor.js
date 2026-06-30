@@ -9,6 +9,13 @@ let currentThemeIdx = 0;
 let isDrawing = false;
 let CUSTOM_STAGE_DATA = null;
 
+// ── ズーム関連の状態 ──
+let editorZoomCellSize = null; // null = 自動フィット、数値 = ユーザーが指定した拡大率(px/セル)
+let pinchStartDist = null;
+let pinchStartCellSize = null;
+const EDITOR_ZOOM_MIN = 14;
+const EDITOR_ZOOM_MAX = 110;
+
 // エディタ用のT_INFO（キノコも追加）
 const EDITOR_T_INFO = {
   [T.EMPTY]:     { name: '消しゴム', icon: '⬜', desc: '配置したオブジェクトを消去します' },
@@ -39,10 +46,15 @@ function initEditor() {
   window.removeEventListener('mouseup', endDraw);
   window.addEventListener('mouseup', endDraw);
   
-  // タッチ対応
-  cv.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); }, {passive:false});
-  cv.addEventListener('touchmove', (e) => { doDraw(e.touches[0]); e.preventDefault(); }, {passive:false});
-  cv.addEventListener('touchend', endDraw);
+  // タッチ対応（1本指で描画、2本指でピンチズーム）
+  cv.addEventListener('touchstart', handleEditorTouchStart, {passive:false});
+  cv.addEventListener('touchmove', handleEditorTouchMove, {passive:false});
+  cv.addEventListener('touchend', handleEditorTouchEnd);
+  cv.addEventListener('touchcancel', handleEditorTouchEnd);
+
+  // PC: マウスホイールでズーム
+  cv.removeEventListener('wheel', handleEditorWheelZoom);
+  cv.addEventListener('wheel', handleEditorWheelZoom, {passive:false});
 
   // UI要素のイベント登録
   document.getElementById('inputCols').onchange = resizeGrid;
@@ -76,7 +88,7 @@ function toggleEditPanel() {
   toggleBtn.classList.toggle('panel-open', willOpen);
   toggleBtn.textContent = willOpen ? '✕' : '☰';
   if (state.isEditorMode && !state.isTestPlay) {
-    fitCanvasForEditor();
+    refreshEditorCanvas();
   }
 }
 
@@ -114,6 +126,7 @@ function setupInitialGrid(c, r) {
     }
     editGrid.push(row);
   }
+  editorZoomCellSize = null;
   fitCanvasForEditor();
 }
 
@@ -140,6 +153,7 @@ function resizeGrid() {
     newGrid.push(row);
   }
   editGrid = newGrid;
+  editorZoomCellSize = null;
   fitCanvasForEditor();
 }
 
@@ -176,6 +190,90 @@ function fitCanvasForEditor() {
   canvas.style.left = leftOffset + 'px';
   canvas.style.top = topOffset + 'px';
   canvas.style.position = 'fixed';
+}
+
+// 画面サイズ・パネル開閉状態に応じて自動フィットするか、
+// ユーザー指定のズーム(editorZoomCellSize)を使うかをまとめて反映する
+function refreshEditorCanvas() {
+  if (editorZoomCellSize !== null) {
+    applyEditorZoom(editorZoomCellSize, true);
+  } else {
+    fitCanvasForEditor();
+  }
+}
+
+// 指定したセルサイズ(px)でキャンバスを再配置する（ズーム用）
+function applyEditorZoom(cellSize, keepCentered) {
+  const cols = editGrid[0].length;
+  const rows = editGrid.length;
+  const clamped = Math.max(EDITOR_ZOOM_MIN, Math.min(EDITOR_ZOOM_MAX, cellSize));
+  editorZoomCellSize = clamped;
+  state.cellSize = clamped;
+
+  const w = cols * clamped;
+  const h = rows * clamped;
+  canvas.width = w;
+  canvas.height = h;
+  state.cols = cols;
+  state.rows = rows;
+
+  const panel = document.getElementById('editPanel');
+  const panelOpen = !panel.classList.contains('hidden');
+  const sideWidth = panelOpen ? panel.getBoundingClientRect().width : 0;
+  const availW = window.innerWidth - sideWidth - 40;
+  const availH = window.innerHeight - 80;
+
+  const leftOffset = sideWidth + 20 + Math.max(0, Math.floor((availW - w) / 2));
+  const topOffset = Math.max(40, Math.floor((window.innerHeight - h) / 2));
+
+  canvas.style.left = leftOffset + 'px';
+  canvas.style.top = topOffset + 'px';
+  canvas.style.position = 'fixed';
+}
+
+// ── 2本指ピンチでズーム（モバイル） ──
+function getTouchDist(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function handleEditorTouchStart(e) {
+  if (!state.isEditorMode || state.isTestPlay) return;
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    isDrawing = false;
+    pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
+    pinchStartCellSize = state.cellSize;
+  } else if (e.touches.length === 1) {
+    startDraw(e.touches[0]);
+  }
+}
+
+function handleEditorTouchMove(e) {
+  if (!state.isEditorMode || state.isTestPlay) return;
+  if (e.touches.length === 2 && pinchStartDist) {
+    e.preventDefault();
+    const dist = getTouchDist(e.touches[0], e.touches[1]);
+    const scale = dist / pinchStartDist;
+    applyEditorZoom(pinchStartCellSize * scale);
+  } else if (e.touches.length === 1) {
+    e.preventDefault();
+    doDraw(e.touches[0]);
+  }
+}
+
+function handleEditorTouchEnd(e) {
+  if (e.touches.length < 2) pinchStartDist = null;
+  if (e.touches.length === 0) endDraw();
+}
+
+// ── マウスホイールでズーム（PC） ──
+function handleEditorWheelZoom(e) {
+  if (!state.isEditorMode || state.isTestPlay) return;
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+  applyEditorZoom((editorZoomCellSize !== null ? editorZoomCellSize : state.cellSize) * factor);
 }
 
 function getGridCoords(e) {
@@ -271,7 +369,8 @@ function startTestPlay() {
   const p = findOne(state.grid, T.PLAYER);
   state.playerPos = { x: p.x, y: p.y };
   
-  // STAGES[5] (カスタムステージ用) として定義して state.stage を 5 にする
+  // CUSTOM_STAGE_DATA に保持し、STAGES配列自体は汚染しない
+  // （汚染すると「全クリア」判定やエピローグ演出が壊れるため）
   CUSTOM_STAGE_DATA = {
     name: 'テストステージ',
     subtitle: 'Custom Stage',
@@ -281,8 +380,7 @@ function startTestPlay() {
     doorTarget: (doors.length > 0) ? doors[0] : null
   };
   
-  STAGES[5] = CUSTOM_STAGE_DATA;
-  state.stage = 5;
+  state.stage = TEST_STAGE_INDEX;
   
   fitCanvas(); // logic.jsのfitCanvasを実行
   updateHUD();
@@ -305,7 +403,7 @@ function stopTestPlay() {
   // エディタ用のキャンバスサイズ・位置に再フィット
   state.isEditorMode = true;
   state.stage = currentThemeIdx; // 元のテーマインデックスに戻す
-  fitCanvasForEditor();
+  refreshEditorCanvas();
 }
 
 // エクスポート
@@ -343,6 +441,7 @@ function importStage() {
       document.getElementById('inputCols').value = c;
       document.getElementById('inputRows').value = r;
       
+      editorZoomCellSize = null;
       fitCanvasForEditor();
       showOverlay('✨ 読み込み成功', 'ステージデータを復元しました！', '閉じる', () => {});
     } else {
