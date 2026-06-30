@@ -195,6 +195,35 @@ function drawCell(x, y, type, cs) {
       break;
     }
 
+    case T.MUSHROOM: {
+      const gm = ctx.createRadialGradient(cs * 0.5, cs * 0.35, 2, cs * 0.5, cs * 0.4, cs * 0.5);
+      gm.addColorStop(0, '#fca5a5');
+      gm.addColorStop(1, '#dc2626');
+      ctx.fillStyle = gm;
+      ctx.beginPath();
+      ctx.ellipse(cs * 0.5, cs * 0.42, cs * 0.42, cs * 0.28, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#fee2e2';
+      [[0.32, 0.32], [0.5, 0.24], [0.68, 0.34], [0.42, 0.4]].forEach(([fx, fy]) => {
+        ctx.beginPath();
+        ctx.arc(cs * fx, cs * fy, cs * 0.045, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#fef3c7';
+      roundRect(ctx, cs * 0.4, cs * 0.42, cs * 0.2, cs * 0.5, 3);
+      ctx.fill();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1;
+      roundRect(ctx, cs * 0.4, cs * 0.42, cs * 0.2, cs * 0.5, 3);
+      ctx.stroke();
+      break;
+    }
+
     case T.PLAYER: {
       drawPlayer(cs);
       break;

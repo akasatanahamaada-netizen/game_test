@@ -472,6 +472,22 @@ kbd {
 }
 #titleBtn:hover { border-color: #a855f7; color: #e879f9; }
 
+/* ── テストプレイ中の「エディットに戻る」ボタン ── */
+#exitTestBtn {
+  background: transparent;
+  border: 1px solid #5a3a7e;
+  color: #a78bfa;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  pointer-events: all;
+  transition: border-color 0.15s, color 0.15s;
+}
+#exitTestBtn:hover { border-color: #a855f7; color: #e879f9; }
+#exitTestBtn.hidden { display: none; }
+
 /* ── Overlay shop button ── */
 #overlayShopBtn {
   background: transparent;
