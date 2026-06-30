@@ -738,14 +738,17 @@ const titleParticles = [];
 
 function initTitleParticles() {
   const w = window.innerWidth, h = window.innerHeight;
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 45; i++) {
     titleParticles.push({
       x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: -(0.3 + Math.random() * 0.5),
-      size: 1 + Math.random() * 3,
-      opacity: 0.3 + Math.random() * 0.5,
-      hue: 260 + Math.random() * 60,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: -(0.15 + Math.random() * 0.35),
+      size: 2 + Math.random() * 3.5,
+      opacity: 0.15 + Math.random() * 0.35,
+      hue: 36 + Math.random() * 24,        // 暖色（古紙・蜂蜜色）
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.02,
+      sway: Math.random() * Math.PI * 2,
     });
   }
 }
@@ -764,18 +767,26 @@ function animateTitleParticles() {
   ctx2.clearRect(0, 0, c2.width, c2.height);
 
   for (const p of titleParticles) {
-    p.x += p.vx; p.y += p.vy;
+    p.sway += 0.015;
+    p.x += p.vx + Math.sin(p.sway) * 0.3;
+    p.y += p.vy;
+    p.rot += p.rotSpeed;
     if (p.y < -10) { p.y = c2.height + 10; p.x = Math.random() * c2.width; }
-    if (p.x < 0) p.x = c2.width;
-    if (p.x > c2.width) p.x = 0;
+    if (p.x < -10) p.x = c2.width + 10;
+    if (p.x > c2.width + 10) p.x = -10;
 
+    ctx2.save();
+    ctx2.translate(p.x, p.y);
+    ctx2.rotate(p.rot);
     ctx2.globalAlpha = p.opacity;
-    ctx2.shadowColor = `hsl(${p.hue}, 80%, 70%)`;
-    ctx2.shadowBlur = 6;
-    ctx2.fillStyle = `hsl(${p.hue}, 80%, 75%)`;
+    ctx2.shadowColor = `hsl(${p.hue}, 60%, 55%)`;
+    ctx2.shadowBlur = 4;
+    ctx2.fillStyle = `hsl(${p.hue}, 55%, 68%)`;
+    // 小さな紙片・木の葉風の楕円
     ctx2.beginPath();
-    ctx2.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx2.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
     ctx2.fill();
+    ctx2.restore();
   }
   ctx2.globalAlpha = 1;
   ctx2.shadowBlur = 0;

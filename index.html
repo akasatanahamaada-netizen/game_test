@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grimm Gravity — グリム重力脱出</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
@@ -79,27 +82,38 @@
     <button id="storySkipBtn">スキップ ✕</button>
   </div>
   <div id="titleScreen">
+    <div id="titleVignette"></div>
     <div id="titleContent">
-      <div id="titleLogo">
-        <div class="logo-line">GRIMM</div>
-        <div class="logo-line logo-line2">GRAVITY</div>
-        <div class="logo-sub">グリム重力脱出パズル</div>
-      </div>
-      <div id="titleStory">
-        魔女の呪いで立方体の迷宮に閉じ込められた。<br>
-        重力を操り、出口を目指せ。
-      </div>
-      <button id="startBtn">冒険を始める</button>
-      <div id="continuePanel" class="hidden">
-        <div id="continueLabel">― ステージを選ぶ ―</div>
-        <div id="stageSelectGrid"></div>
-      </div>
-      <button id="shopBtn">🛍️ スキンショップ</button>
-      <button id="codexBtn">📜 称号図鑑</button>
-      <div id="controls">
-        <div class="ctrl-row"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> または <kbd>A</kbd><kbd>W</kbd><kbd>D</kbd><kbd>S</kbd> — 重力の向きを変える</div>
-        <div class="ctrl-row"><kbd>Z</kbd> — 1手だけ前に戻る &nbsp; <kbd>R</kbd> — ステージを最初からやり直す</div>
-        <div class="ctrl-row touch-hint">📱 スマホでは画面の十字ボタンかスワイプで操作できます</div>
+      <div id="parchmentPanel">
+        <div class="parchment-corner corner-tl"></div>
+        <div class="parchment-corner corner-tr"></div>
+        <div class="parchment-corner corner-bl"></div>
+        <div class="parchment-corner corner-br"></div>
+
+        <div id="titleLogo">
+          <div class="logo-ornament">❦</div>
+          <div class="logo-line">GRIMM GRAVITY</div>
+          <div class="logo-line-jp">グリム重力脱出譚</div>
+          <div class="logo-ornament logo-ornament-bottom">❦</div>
+        </div>
+        <div id="titleStory">
+          魔女の呪いで物語の世界に閉じ込められた。<br>
+          重力を操り、出口を目指せ。
+        </div>
+        <button id="startBtn"><span class="btn-quill">🖋️</span>冒険を始める</button>
+        <div id="continuePanel" class="hidden">
+          <div id="continueLabel">✦ ステージを選ぶ ✦</div>
+          <div id="stageSelectGrid"></div>
+        </div>
+        <div id="subButtonRow">
+          <button id="shopBtn">🛍️ スキンショップ</button>
+          <button id="codexBtn">📜 称号図鑑</button>
+        </div>
+        <div id="controls">
+          <div class="ctrl-row"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> または <kbd>A</kbd><kbd>W</kbd><kbd>D</kbd><kbd>S</kbd> — 重力の向きを変える</div>
+          <div class="ctrl-row"><kbd>Z</kbd> — 1手だけ前に戻る &nbsp; <kbd>R</kbd> — ステージを最初からやり直す</div>
+          <div class="ctrl-row touch-hint">📱 スマホでは画面の十字ボタンかスワイプで操作できます</div>
+        </div>
       </div>
     </div>
     <div id="titleParticles"></div>

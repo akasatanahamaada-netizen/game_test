@@ -6,6 +6,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   font-family: 'Georgia', serif;
   color: #e8d5a3;
@@ -122,95 +123,182 @@ body {
   box-shadow: 0 0 20px #a855f766;
 }
 
-/* ── Title Screen ── */
+/* ── Title Screen — 古い絵本・羊皮紙テイスト ── */
 #titleScreen {
   position: fixed;
   inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(ellipse at center, #1e0d3e 0%, #0a0510 70%);
+  justify-content: safe center;
+  align-items: safe center;
+  background:
+    radial-gradient(ellipse at center, #2a1f12 0%, #0d0904 75%);
   z-index: 200;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#titleVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at center, transparent 40%, #0d090499 85%, #0d0904 100%);
 }
 
 #titleContent {
   text-align: center;
   z-index: 2;
   position: relative;
+  padding: 28px 14px;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
+
+/* ── 羊皮紙パネル ── */
+#parchmentPanel {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 30% 20%, #6b4f2e22, transparent 55%),
+    radial-gradient(ellipse at 75% 80%, #4a361e22, transparent 55%),
+    linear-gradient(160deg, #ecd9ad 0%, #e3c894 45%, #d9b97e 100%);
+  border-radius: 6px;
+  padding: 42px 44px 34px;
+  box-shadow:
+    0 0 0 1px #8a6a3c66,
+    0 18px 50px #00000088,
+    inset 0 0 60px #6b4a1e33,
+    inset 0 0 2px #fff8e699;
+  color: #3a2a14;
+}
+
+/* インクの染み風アクセント（左右にうっすら） */
+#parchmentPanel::before,
+#parchmentPanel::after {
+  content: '';
+  position: absolute;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  opacity: 0.10;
+  background: radial-gradient(circle, #2d1b06 0%, transparent 70%);
+  pointer-events: none;
+}
+#parchmentPanel::before { top: -10px; left: -10px; }
+#parchmentPanel::after  { bottom: -16px; right: -16px; }
+
+/* 四隅の装飾コーナー */
+.parchment-corner {
+  position: absolute;
+  width: 30px; height: 30px;
+  border: 2px solid #8a6a3c;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.corner-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+.corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
 
 #titleLogo {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
+
+.logo-ornament {
+  font-size: 22px;
+  color: #8a6a3c;
+  margin-bottom: 6px;
+  letter-spacing: 8px;
+}
+.logo-ornament-bottom { margin-top: 10px; margin-bottom: 0; }
 
 .logo-line {
-  font-size: 72px;
-  font-weight: bold;
-  letter-spacing: 12px;
-  color: #e8d5a3;
-  text-shadow: 0 0 30px #a855f7, 0 0 60px #7c3aed;
-  line-height: 1;
-}
-
-.logo-line2 {
-  color: #c084fc;
-  text-shadow: 0 0 30px #f0abfc, 0 0 60px #a855f7;
-}
-
-.logo-sub {
-  font-size: 16px;
-  color: #a78bfa;
+  font-family: 'Cinzel Decorative', 'Shippori Mincho', serif;
+  font-size: 44px;
+  font-weight: 900;
   letter-spacing: 4px;
+  color: #4a2f12;
+  text-shadow: 0 1px 0 #fff8e6cc, 0 2px 3px #00000022;
+  line-height: 1.15;
+}
+
+.logo-line-jp {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b4f2e;
+  letter-spacing: 5px;
   margin-top: 8px;
 }
 
 #titleStory {
-  font-size: 15px;
-  color: #c4b5fd;
-  line-height: 2;
-  margin-bottom: 40px;
-  text-shadow: 0 0 10px #7c3aed44;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 14.5px;
+  color: #4a3520;
+  line-height: 2.1;
+  margin: 24px 0 30px;
+  padding: 14px 10px;
+  border-top: 1px solid #8a6a3c55;
+  border-bottom: 1px solid #8a6a3c55;
 }
 
 #startBtn {
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
-  border: none;
-  color: #fff;
-  font-family: inherit;
-  font-size: 20px;
-  padding: 16px 48px;
-  border-radius: 12px;
+  font-family: 'Shippori Mincho', serif;
+  background: linear-gradient(160deg, #6b4226, #4a2c16);
+  border: 1px solid #d9b97e;
+  color: #f3e3bf;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 14px 44px;
+  border-radius: 4px;
   cursor: pointer;
-  letter-spacing: 2px;
-  box-shadow: 0 0 30px #a855f766;
-  transition: transform 0.15s, box-shadow 0.2s;
-  margin-bottom: 36px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  letter-spacing: 4px;
+  box-shadow: 0 4px 0 #2d1b0a, 0 6px 16px #00000044;
+  transition: transform 0.12s, box-shadow 0.12s;
+  margin-bottom: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
+.btn-quill { font-size: 16px; }
 
 #startBtn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 50px #a855f7aa;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #2d1b0a, 0 10px 22px #00000055;
+}
+#startBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #2d1b0a, 0 4px 10px #00000044;
+}
+
+#subButtonRow {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 #controls {
-  font-size: 13px;
-  color: #7c6faa;
+  font-family: 'EB Garamond', 'Shippori Mincho', serif;
+  font-size: 12.5px;
+  color: #6b4f2e;
   line-height: 2;
 }
 
 .ctrl-row { margin-bottom: 4px; }
 
 kbd {
-  background: #2d1654;
-  border: 1px solid #5a3a7e;
+  background: #f3e3bf;
+  border: 1px solid #8a6a3c;
   border-radius: 4px;
   padding: 2px 7px;
-  font-size: 12px;
-  color: #c084fc;
+  font-size: 11.5px;
+  color: #4a2f12;
   font-family: monospace;
 }
 
@@ -235,22 +323,18 @@ kbd {
 
 /* ── Shop button on title ── */
 #shopBtn {
-  background: transparent;
-  border: 1px solid #5a3a7e;
-  color: #c084fc;
-  font-family: inherit;
-  font-size: 15px;
-  padding: 10px 28px;
-  border-radius: 8px;
+  background: #f3e3bf88;
+  border: 1px solid #8a6a3c;
+  color: #4a2f12;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 13.5px;
+  padding: 9px 22px;
+  border-radius: 4px;
   cursor: pointer;
   letter-spacing: 1px;
-  transition: border-color 0.15s, color 0.15s;
-  margin-bottom: 24px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  transition: background 0.15s, border-color 0.15s;
 }
-#shopBtn:hover { border-color: #a855f7; color: #e879f9; }
+#shopBtn:hover { background: #f3e3bfdd; border-color: #4a2f12; }
 
 /* ── Shop Screen ── */
 #shopScreen {
@@ -414,8 +498,9 @@ kbd {
 #continuePanel.hidden { display: none; }
 
 #continueLabel {
+  font-family: 'Shippori Mincho', serif;
   font-size: 12px;
-  color: #7c6faa;
+  color: #6b4f2e;
   letter-spacing: 3px;
   margin-bottom: 12px;
 }
@@ -430,13 +515,13 @@ kbd {
 
 .stage-select-btn {
   position: relative;
-  background: #2d1654;
-  border: 1.5px solid #5a3a7e;
-  color: #c4b5fd;
-  font-family: inherit;
+  background: #f3e3bf99;
+  border: 1.5px solid #8a6a3c;
+  color: #4a2f12;
+  font-family: 'Shippori Mincho', serif;
   font-size: 12px;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -445,12 +530,12 @@ kbd {
   min-width: 64px;
   transition: border-color 0.15s, transform 0.1s;
 }
-.stage-select-btn:hover:not(:disabled) { border-color: #a855f7; transform: translateY(-2px); }
-.stage-select-btn.cleared { border-color: #4ade80; }
+.stage-select-btn:hover:not(:disabled) { border-color: #4a2f12; transform: translateY(-2px); }
+.stage-select-btn.cleared { border-color: #2f7d4f; background: #d8e8d199; }
 .stage-select-btn.locked { opacity: 0.35; cursor: default; }
 
 .ss-icon { font-size: 22px; line-height: 1; }
-.ss-name { font-size: 10px; color: #7c6faa; }
+.ss-name { font-size: 10px; color: #6b4f2e; }
 .ss-check {
   position: absolute;
   top: 4px; right: 6px;
@@ -460,22 +545,18 @@ kbd {
 
 /* ── Codex button on title ── */
 #codexBtn {
-  background: transparent;
-  border: 1px solid #5a3a7e;
-  color: #c084fc;
-  font-family: inherit;
-  font-size: 15px;
-  padding: 10px 28px;
-  border-radius: 8px;
+  background: #f3e3bf88;
+  border: 1px solid #8a6a3c;
+  color: #4a2f12;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 13.5px;
+  padding: 9px 22px;
+  border-radius: 4px;
   cursor: pointer;
   letter-spacing: 1px;
-  transition: border-color 0.15s, color 0.15s;
-  margin-bottom: 24px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+  transition: background 0.15s, border-color 0.15s;
 }
-#codexBtn:hover { border-color: #a855f7; color: #e879f9; }
+#codexBtn:hover { background: #f3e3bfdd; border-color: #4a2f12; }
 
 /* ── Codex Screen ── */
 #codexScreen {
@@ -911,4 +992,111 @@ kbd {
 
 .touch-hint {
   color: #a78bfa !important;
+}
+
+/* ================================================================
+   Title screen — mobile responsive (画面はみ出し対策)
+   ================================================================ */
+@media (max-width: 600px) {
+  #titleContent { padding: 18px 10px; }
+  #parchmentPanel { padding: 28px 20px 24px; }
+  .parchment-corner { width: 18px; height: 18px; }
+
+  #titleLogo { margin-bottom: 14px; }
+  .logo-ornament { font-size: 16px; }
+  .logo-line {
+    font-size: clamp(24px, 8vw, 36px);
+    letter-spacing: 1.5px;
+  }
+  .logo-line-jp { font-size: 11px; letter-spacing: 3px; margin-top: 6px; }
+
+  #titleStory {
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 16px 0 20px;
+    padding: 10px 4px;
+  }
+
+  #startBtn {
+    font-size: 15px;
+    padding: 11px 28px;
+    margin-bottom: 18px;
+  }
+
+  #continuePanel { margin-bottom: 14px; }
+  #continueLabel { font-size: 10px; margin-bottom: 8px; }
+  #stageSelectGrid { gap: 6px; }
+  .stage-select-btn { min-width: 50px; padding: 7px 9px; font-size: 10px; }
+  .ss-icon { font-size: 17px; }
+
+  #subButtonRow { gap: 8px; margin-bottom: 18px; }
+  #shopBtn, #codexBtn {
+    font-size: 11.5px;
+    padding: 7px 14px;
+  }
+
+  #controls { font-size: 11px; line-height: 1.7; }
+  kbd { padding: 1px 5px; font-size: 10px; }
+  .touch-hint { font-size: 10.5px; }
+}
+
+@media (max-width: 380px) {
+  .logo-line { font-size: clamp(20px, 7vw, 30px); letter-spacing: 1px; }
+  #titleStory { font-size: 11px; }
+  #parchmentPanel { padding: 24px 14px 20px; }
+}
+
+/* ================================================================
+   Overlay (clear/death screen) — mobile responsive
+   ================================================================ */
+@media (max-width: 600px) {
+  #overlayBox {
+    padding: 26px 22px;
+    max-width: 88vw;
+    max-height: 86vh;
+    overflow-y: auto;
+  }
+  #overlayTitle { font-size: 22px; }
+  #overlayText { font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+  #overlayBtn { font-size: 14px; padding: 10px 28px; }
+}
+
+/* ================================================================
+   Shop / Codex modals — mobile responsive
+   ================================================================ */
+@media (max-width: 600px) {
+  #shopBox, #codexBox {
+    padding: 22px 18px;
+    width: 94vw;
+    max-height: 90vh;
+  }
+  #shopHeader, #codexHeader { margin-bottom: 16px; }
+  #shopTitle, #codexTitle { font-size: 17px; }
+  #shopCoins, #codexProgress { font-size: 12px; }
+
+  #shopGrid, #codexGrid {
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .skin-icon, .title-icon { font-size: 28px; }
+  .skin-name, .title-name { font-size: 11px; }
+  .skin-desc, .title-desc { font-size: 9.5px; }
+  .skin-btn, .skin-badge { font-size: 10px; padding: 5px 10px; }
+
+  #shopCloseBtn, #codexCloseBtn { font-size: 13px; padding: 8px 28px; }
+}
+
+/* HUD: 重なり防止のため横幅制限してラップ許可 */
+@media (max-width: 600px) {
+  #hud {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 94vw;
+    gap: 10px 16px;
+    row-gap: 4px;
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+  #titleBtn { font-size: 10px; padding: 2px 8px; }
 }
