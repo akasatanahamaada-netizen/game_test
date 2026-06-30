@@ -731,7 +731,13 @@ function render() {
   for (let y = 0; y < state.rows; y++) {
     for (let x = 0; x < state.cols; x++) {
       const type = state.grid[y][x];
-      if (type !== T.EMPTY) drawCell(x, y, type, cs);
+      if (type !== T.EMPTY) {
+        try {
+          drawCell(x, y, type, cs);
+        } catch (err) {
+          console.error('drawCell failed at', x, y, 'type=', type, err);
+        }
+      }
     }
   }
 
@@ -824,7 +830,15 @@ function animateTitleParticles() {
 function drawWall(type, cs) {
   const dark = (type === T.DARK_WALL);
 
-  switch(state.stage) {
+  // テストプレイ中のカスタムステージ(state.stage === 5)には
+  // 対応するテーマ描画が無いため、エディタで選択中のテーマ(currentThemeIdx)
+  // にフォールバックする。
+  let themeIdx = state.stage;
+  if (themeIdx >= 5 || themeIdx < 0) {
+    themeIdx = (typeof currentThemeIdx !== 'undefined') ? currentThemeIdx : 0;
+  }
+
+  switch(themeIdx) {
 
     case 0:
       drawForestWall(cs, dark);
@@ -1581,7 +1595,11 @@ function renderEditor() {
     for (let x = 0; x < state.cols; x++) {
       const type = editGrid[y][x];
       if (type !== T.EMPTY) {
-        drawCell(x, y, type, cs);
+        try {
+          drawCell(x, y, type, cs);
+        } catch (err) {
+          console.error('drawCell (editor) failed at', x, y, 'type=', type, err);
+        }
       }
     }
   }
