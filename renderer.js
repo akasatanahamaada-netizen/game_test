@@ -1526,3 +1526,36 @@ function drawIceWall(cs, dark){
 
   ctx.shadowBlur = 0;
 }
+
+// ================================================================
+//  renderEditor — エディタモード用の描画
+// ================================================================
+function renderEditor() {
+  const cs = state.cellSize;
+  const pal = THEMES_INTEGRATED[currentThemeIdx].palette;
+
+  // 背景クリア
+  ctx.fillStyle = pal.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // グリッド線の描画
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 0.5;
+  for (let y = 0; y < state.rows; y++) {
+    for (let x = 0; x < state.cols; x++) {
+      ctx.strokeRect(x * cs, y * cs, cs, cs);
+    }
+  }
+
+  // セルの描画
+  for (let y = 0; y < state.rows; y++) {
+    for (let x = 0; x < state.cols; x++) {
+      const type = editGrid[y][x];
+      if (type !== T.EMPTY) {
+        drawCell(x, y, type, cs);
+      }
+    }
+  }
+
+  time++;
+}

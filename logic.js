@@ -35,6 +35,8 @@ let state = {
   usedUndoThisStage: false,
   hasSeenPrologue: false,
   hasSeenEpilogue: false,
+  isEditorMode: false,
+  isTestPlay: false,
 };
 
 // ================================================================
@@ -591,10 +593,19 @@ function showOverlay(title, text, btn, cb, showShop = false, showTitleBtn = fals
   const tb = document.getElementById('overlayTitleBtn');
   if (showTitleBtn) {
     tb.classList.remove('hidden');
-    tb.onclick = () => {
-      ov.classList.add('hidden');
-      goToTitle();
-    };
+    if (state.isTestPlay) {
+      tb.textContent = '🛠️ エディタに戻る';
+      tb.onclick = () => {
+        ov.classList.add('hidden');
+        stopTestPlay();
+      };
+    } else {
+      tb.textContent = '🏠 タイトルへ戻る';
+      tb.onclick = () => {
+        ov.classList.add('hidden');
+        goToTitle();
+      };
+    }
   } else {
     tb.classList.add('hidden');
   }
@@ -603,7 +614,18 @@ function showOverlay(title, text, btn, cb, showShop = false, showTitleBtn = fals
 }
 
 function showDeath() {
-  showOverlay('💀 やられた…', 'トゲに触れてしまった。\nもう一度挑め。', 'もう一度', () => loadStage(state.stage));
+  if (state.isTestPlay) {
+    showOverlay(
+      '💀 やられた…',
+      'トゲに触れてしまった。\nもう一度挑戦するか、エディタに戻って修正しましょう。',
+      'もう一度挑戦',
+      () => loadStage(state.stage),
+      false,
+      true
+    );
+  } else {
+    showOverlay('💀 やられた…', 'トゲに触れてしまった。\nもう一度挑め。', 'もう一度', () => loadStage(state.stage));
+  }
 }
 
 function checkAndAwardTitles() {
@@ -674,6 +696,17 @@ function startStageWithIntro(idx) {
 }
 
 function showVictory() {
+  if (state.isTestPlay) {
+    showOverlay(
+      '🎉 テストクリア！',
+      'あなたが作成したステージをクリアできました！\n手数は ' + state.moves + ' 手でした。',
+      'エディタに戻る',
+      () => {
+        stopTestPlay();
+      }
+    );
+    return;
+  }
   // コイン付与（初回クリアボーナス）
   const alreadyCleared = state.clearedStages.includes(state.stage);
   const coinReward = alreadyCleared ? 3 : 10;
@@ -794,6 +827,8 @@ function gameLoop() {
   if (state.gameStarted) {
     updateParticles();
     render();
+  } else if (state.isEditorMode && !state.isTestPlay) {
+    renderEditor();
   }
 
   const ts = document.getElementById('titleScreen');
@@ -854,11 +889,16 @@ gameLoop();
 function goToTitle() {
   document.getElementById('overlay').classList.add('hidden');
   document.getElementById('storyScreen').classList.add('hidden');
+  document.getElementById('editPanel').classList.add('hidden');
+  document.getElementById('exitTestBtn').classList.add('hidden');
+  document.getElementById('titleBtn').classList.remove('hidden');
   const ts = document.getElementById('titleScreen');
   ts.style.display = '';
   ts.classList.remove('fade-out');
   ts.style.opacity = '';
   state.gameStarted = false;
+  state.isEditorMode = false;
+  state.isTestPlay = false;
   renderStageSelect();
 }
 
@@ -893,6 +933,20 @@ function renderStageSelect() {
 document.getElementById('startBtn').addEventListener('click', () => {
   startStageWithIntro(0);
 });
+
+document.getElementById('editorBtn').addEventListener('click', goToEditor);
+
+function goToEditor() {
+  const ts = document.getElementById('titleScreen');
+  ts.classList.add('fade-out');
+  setTimeout(() => { ts.style.display = 'none'; }, 500);
+  
+  document.getElementById('editPanel').classList.remove('hidden');
+  state.isEditorMode = true;
+  state.isTestPlay = false;
+  state.gameStarted = false;
+  initEditor();
+}
 
 document.getElementById('shopBtn').addEventListener('click', openShop);
 document.getElementById('shopCloseBtn').addEventListener('click', closeShop);
@@ -946,7 +1000,11 @@ function renderCodex() {
 }
 
 window.addEventListener('resize', () => {
-  if (state.gameStarted) fitCanvas();
+  if (state.gameStarted) {
+    fitCanvas();
+  } else if (state.isEditorMode) {
+    fitCanvasForEditor();
+  }
 });
 
 document.getElementById('codexBtn').addEventListener('click', openCodex);

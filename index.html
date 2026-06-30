@@ -17,6 +17,7 @@
       <span id="moveCount">moves: 0</span>
       <span id="coinCount">🪙 0</span>
       <button id="titleBtn">🏠 タイトル</button>
+      <button id="exitTestBtn" class="hidden">🛠️ エディットに戻る</button>
     </div>
     <div id="gravityIndicator">
       <div id="gravArrow">↓</div>
@@ -36,6 +37,59 @@
       </div>
     </div>
   </div>
+
+  <!-- ── ステージエディタUI ── -->
+  <div id="editPanel" class="hidden">
+    <div class="edit-panel-box">
+      <div class="edit-panel-title">🛠️ ステージエディタ</div>
+      
+      <div class="panel-section">
+        <div class="panel-title">1. タイルを配置</div>
+        <div class="palette-grid" id="palette"></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">2. ステージのサイズ</div>
+        <div class="size-inputs">
+          <div>
+            <label>横幅 (列)</label>
+            <input type="number" id="inputCols" min="5" max="30" value="12">
+          </div>
+          <div>
+            <label>縦幅 (行)</label>
+            <input type="number" id="inputRows" min="5" max="20" value="9">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">3. テーマ</div>
+        <select id="selectTheme">
+          <option value="0">Ch.1 赤ずきん (森)</option>
+          <option value="1">Ch.2 ラプンツェル (塔)</option>
+          <option value="2">Ch.3 菓子の家 (菓子)</option>
+          <option value="3">Ch.4 シンデレラ (牢獄)</option>
+          <option value="4">Ch.5 雪の女王 (宮殿)</option>
+        </select>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">4. 保存 & 共有</div>
+        <button id="exportBtn" class="action-btn">コードをコピー</button>
+        <div class="import-area">
+          <label>コード読み込み</label>
+          <textarea id="importCode" rows="2" placeholder="コードをここに貼り付け"></textarea>
+          <button id="importBtn" class="action-btn import-btn">適用する</button>
+        </div>
+      </div>
+      
+      <div class="panel-section action-section">
+        <button id="testPlayBtn" class="action-btn mode-btn">⚔️ テストプレイ</button>
+        <button id="editorCloseBtn" class="action-btn close-btn">🏠 タイトルへ</button>
+      </div>
+    </div>
+  </div>
+
   <div id="overlay" class="hidden">
     <div id="overlayBox">
       <div id="overlayTitle"></div>
@@ -100,7 +154,10 @@
           魔女の呪いで物語の世界に閉じ込められた。<br>
           重力を操り、出口を目指せ。
         </div>
-        <button id="startBtn"><span class="btn-quill">🖋️</span>冒険を始める</button>
+        <div class="title-main-btns" style="display: flex; justify-content: center; gap: 16px; margin-bottom: 30px;">
+          <button id="startBtn" style="margin-bottom: 0;"><span class="btn-quill">🖋️</span>冒険を始める</button>
+          <button id="editorBtn" style="margin-bottom: 0;"><span class="btn-quill">🛠️</span>ステージを作る</button>
+        </div>
         <div id="continuePanel" class="hidden">
           <div id="continueLabel">✦ ステージを選ぶ ✦</div>
           <div id="stageSelectGrid"></div>
@@ -124,10 +181,12 @@
       2. story.js    — CHARACTERS, シナリオ定義（logic.js が参照）
       3. renderer.js — canvas / ctx / render 系を定義（logic.js が呼び出す）
       4. logic.js    — state / gameLoop など。levels & renderer & story に依存
+      5. editor.js   — ステージエディタのロジック
   -->
   <script src="levels.js"></script>
   <script src="story.js"></script>
   <script src="renderer.js"></script>
   <script src="logic.js"></script>
+  <script src="editor.js"></script>
 </body>
 </html>
