@@ -64,6 +64,7 @@ function initEditor() {
   document.getElementById('editPanel').classList.remove('hidden');
   document.getElementById('editPanelToggleBtn').classList.remove('hidden');
   document.getElementById('editPanelToggleBtn').classList.add('panel-open');
+  document.getElementById('editPanelToggleBtn').textContent = '✕';
 }
 
 // エディタの左パネルを開閉する（編集モードのまま、キャンバスを広く使いたい時用）
@@ -73,7 +74,7 @@ function toggleEditPanel() {
   const willOpen = panel.classList.contains('hidden');
   panel.classList.toggle('hidden', !willOpen);
   toggleBtn.classList.toggle('panel-open', willOpen);
-  toggleBtn.textContent = willOpen ? '☰' : '✕';
+  toggleBtn.textContent = willOpen ? '✕' : '☰';
   if (state.isEditorMode && !state.isTestPlay) {
     fitCanvasForEditor();
   }
