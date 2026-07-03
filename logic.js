@@ -118,8 +118,7 @@ function isTitlesComplete() {
 
 // ================================================================
 //  進行状況の永続化（クリア状況・称号・コイン・スキン）
-//  通常ブラウザでは localStorage に保存。
-//  window.storage（アーティファクト環境のAPI）が存在する場合は併用する。
+//  localStorage に同期的に保存する（確実に即座に書き込まれる）。
 // ================================================================
 const PROGRESS_KEY = 'grimm-progress';
 
@@ -136,50 +135,50 @@ function collectProgress() {
 }
 
 function applyProgress(data) {
-  state.coins = data.coins || 0;
+  if (!data || typeof data !== 'object') return;
+  state.coins = typeof data.coins === 'number' ? data.coins : 0;
   state.currentSkin = data.currentSkin || 'wizard';
   state.unlockedSkins = Array.isArray(data.unlockedSkins) && data.unlockedSkins.length > 0
     ? data.unlockedSkins : ['wizard'];
   state.clearedStages = Array.isArray(data.clearedStages) ? data.clearedStages : [];
   state.earnedTitles = Array.isArray(data.earnedTitles) ? data.earnedTitles : [];
-  state.hasSeenPrologue = data.hasSeenPrologue || false;
-  state.hasSeenEpilogue = data.hasSeenEpilogue || false;
+  state.hasSeenPrologue = !!data.hasSeenPrologue;
+  state.hasSeenEpilogue = !!data.hasSeenEpilogue;
 }
 
-async function loadProgress() {
-  let data = null;
-
-  // 1) localStorage（通常のブラウザ環境）
+// ── 読み込み（起動時に1度だけ呼ぶ） ──
+function loadProgress() {
   try {
     const raw = localStorage.getItem(PROGRESS_KEY);
-    if (raw) data = JSON.parse(raw);
-  } catch (e) { /* localStorage不可の環境 */ }
-
-  // 2) window.storage（アーティファクト環境）— localStorageに無い場合のみ
-  if (!data && typeof window.storage !== 'undefined' && window.storage && window.storage.get) {
-    try {
-      const result = await window.storage.get(PROGRESS_KEY);
-      if (result) data = JSON.parse(result.value);
-    } catch (e) { /* キー未作成など */ }
+    if (raw) {
+      const data = JSON.parse(raw);
+      applyProgress(data);
+      console.log('[Grimm] 進行データを復元:', data);
+    } else {
+      console.log('[Grimm] 保存データなし（初回起動）');
+    }
+  } catch (e) {
+    console.warn('[Grimm] 進行データの読み込みに失敗:', e);
   }
-
-  if (data) applyProgress(data);
   updateCoinDisplay();
 }
 
-async function saveProgress() {
-  const json = JSON.stringify(collectProgress());
-
+// ── 保存（完全同期・即座に反映） ──
+function saveProgress() {
   try {
+    const data = collectProgress();
+    const json = JSON.stringify(data);
     localStorage.setItem(PROGRESS_KEY, json);
-  } catch (e) { /* localStorage不可の環境 */ }
-
-  if (typeof window.storage !== 'undefined' && window.storage && window.storage.set) {
-    try {
-      await window.storage.set(PROGRESS_KEY, json);
-    } catch (e) {}
+  } catch (e) {
+    console.warn('[Grimm] 進行データの保存に失敗:', e);
   }
 }
+
+// ── ページを閉じる / バックグラウンドに移る時の安全ネット ──
+window.addEventListener('beforeunload', saveProgress);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveProgress();
+});
 
 function updateCoinDisplay() {
   const el = document.getElementById('coinCount');
@@ -963,7 +962,8 @@ document.getElementById('resetBtn').addEventListener('click', () => loadStage(st
 //  Start
 // ================================================================
 initTitleParticles();
-loadProgress().then(() => renderStageSelect());
+loadProgress();
+renderStageSelect();
 gameLoop();
 
 function goToTitle() {
