@@ -117,39 +117,68 @@ function isTitlesComplete() {
 }
 
 // ================================================================
-//  Coin/Skin persistence (localStorage fallback if storage API fails)
+//  進行状況の永続化（クリア状況・称号・コイン・スキン）
+//  通常ブラウザでは localStorage に保存。
+//  window.storage（アーティファクト環境のAPI）が存在する場合は併用する。
 // ================================================================
+const PROGRESS_KEY = 'grimm-progress';
+
+function collectProgress() {
+  return {
+    coins: state.coins,
+    currentSkin: state.currentSkin,
+    unlockedSkins: state.unlockedSkins,
+    clearedStages: state.clearedStages,
+    earnedTitles: state.earnedTitles,
+    hasSeenPrologue: state.hasSeenPrologue,
+    hasSeenEpilogue: state.hasSeenEpilogue,
+  };
+}
+
+function applyProgress(data) {
+  state.coins = data.coins || 0;
+  state.currentSkin = data.currentSkin || 'wizard';
+  state.unlockedSkins = Array.isArray(data.unlockedSkins) && data.unlockedSkins.length > 0
+    ? data.unlockedSkins : ['wizard'];
+  state.clearedStages = Array.isArray(data.clearedStages) ? data.clearedStages : [];
+  state.earnedTitles = Array.isArray(data.earnedTitles) ? data.earnedTitles : [];
+  state.hasSeenPrologue = data.hasSeenPrologue || false;
+  state.hasSeenEpilogue = data.hasSeenEpilogue || false;
+}
+
 async function loadProgress() {
+  let data = null;
+
+  // 1) localStorage（通常のブラウザ環境）
   try {
-    const result = await window.storage.get('grimm-progress');
-    if (result) {
-      const data = JSON.parse(result.value);
-      state.coins = data.coins || 0;
-      state.currentSkin = data.currentSkin || 'wizard';
-      state.unlockedSkins = data.unlockedSkins || ['wizard'];
-      state.clearedStages = data.clearedStages || [];
-      state.earnedTitles = data.earnedTitles || [];
-      state.hasSeenPrologue = data.hasSeenPrologue || false;
-      state.hasSeenEpilogue = data.hasSeenEpilogue || false;
-    }
-  } catch(e) {
-    // storage not available, use defaults
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (raw) data = JSON.parse(raw);
+  } catch (e) { /* localStorage不可の環境 */ }
+
+  // 2) window.storage（アーティファクト環境）— localStorageに無い場合のみ
+  if (!data && typeof window.storage !== 'undefined' && window.storage && window.storage.get) {
+    try {
+      const result = await window.storage.get(PROGRESS_KEY);
+      if (result) data = JSON.parse(result.value);
+    } catch (e) { /* キー未作成など */ }
   }
+
+  if (data) applyProgress(data);
   updateCoinDisplay();
 }
 
 async function saveProgress() {
+  const json = JSON.stringify(collectProgress());
+
   try {
-    await window.storage.set('grimm-progress', JSON.stringify({
-      coins: state.coins,
-      currentSkin: state.currentSkin,
-      unlockedSkins: state.unlockedSkins,
-      clearedStages: state.clearedStages,
-      earnedTitles: state.earnedTitles,
-      hasSeenPrologue: state.hasSeenPrologue,
-      hasSeenEpilogue: state.hasSeenEpilogue,
-    }));
-  } catch(e) {}
+    localStorage.setItem(PROGRESS_KEY, json);
+  } catch (e) { /* localStorage不可の環境 */ }
+
+  if (typeof window.storage !== 'undefined' && window.storage && window.storage.set) {
+    try {
+      await window.storage.set(PROGRESS_KEY, json);
+    } catch (e) {}
+  }
 }
 
 function updateCoinDisplay() {
