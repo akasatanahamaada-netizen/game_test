@@ -286,11 +286,19 @@ async function playOnlineStage(id) {
   currentThemeIdx = data.theme || 0;
   editGrid = sanitized;
 
+  // タイトル画面を即座に非表示にする（fade-outだけだとポインターイベントを
+  // ブロックし続けてプレイ開始できない場合がある）
   const ts = document.getElementById('titleScreen');
-  ts.classList.add('fade-out');
-  setTimeout(() => { ts.style.display = 'none'; }, 500);
+  ts.style.display = 'none';
 
-  startTestPlay();
+  try {
+    startTestPlay();
+  } catch (err) {
+    console.error('[Grimm] オンラインプレイ開始エラー:', err);
+    showOverlay('❌ エラー', 'ステージの読み込み中にエラーが発生しました。', '閉じる', () => goToTitle());
+    return;
+  }
+
   state.isOnlinePlay = true;
 
   const etb = document.getElementById('exitTestBtn');
