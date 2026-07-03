@@ -37,6 +37,7 @@ let state = {
   hasSeenEpilogue: false,
   isEditorMode: false,
   isTestPlay: false,
+  standingIce: null,      // プレイヤーが現在乗っている氷タイル座標（離れたら破壊）
 };
 
 // ================================================================
@@ -380,7 +381,7 @@ function findAll(grid, type) {
 function findOne(grid, type) { return findAll(grid, type)[0] || null; }
 
 function isSolid(t) { return t === T.WALL || t === T.DARK_WALL; }
-function isPassable(t) { return t === T.EMPTY || t === T.KEY || t === T.GOAL || t === T.ICE || t === T.MUSHROOM; }
+function isPassable(t) { return t === T.EMPTY || t === T.KEY || t === T.GOAL || t === T.ICE; }
 
 // ================================================================
 //  Stage loading
@@ -404,6 +405,7 @@ function loadStage(idx) {
 
   const p = findOne(state.grid, T.PLAYER);
   state.playerPos = { x: p.x, y: p.y };
+  state.standingIce = getStandingIce();
 
   fitCanvas();
   updateHUD();
@@ -454,11 +456,10 @@ function applyGravity(grid, grav) {
 
       const below = grid[ny][nx];
 
+      // 氷(T.ICE)は「乗れる床」なので落下先にはならない（すり抜け不可）
       const canFall = (below === T.EMPTY)
-  　　　|| (below === T.ICE)
-  　　　|| (below === T.KEY && type === T.PLAYER)
-  　　　|| (below === T.GOAL && type === T.PLAYER && state.hasKey)
-  　　　|| (below === T.MUSHROOM && type === T.PLAYER);
+        || (below === T.KEY && type === T.PLAYER)
+        || (below === T.GOAL && type === T.PLAYER && state.hasKey);
       
       if (canFall) {
         if (below === T.KEY && type === T.PLAYER) state.hasKey = true;
@@ -493,6 +494,7 @@ function applyGravity(grid, grav) {
 // ================================================================
 function changeGravity(dir) {
   if (state.gameOver || state.won || !state.gameStarted) return;
+  if (dir === state.gravity) return; // 同方向は無意味なので手数を消費しない
 
   state.history.push({
     grid: deepCopy(state.grid),
@@ -500,9 +502,11 @@ function changeGravity(dir) {
     gravity: state.gravity,
     hasKey: state.hasKey,
     moves: state.moves,
+    standingIce: state.standingIce ? { ...state.standingIce } : null,
   });
   if (state.history.length > 50) state.history.shift();
 
+  const prevIce = state.standingIce;
   state.gravity = dir;
   state.moves++;
 
@@ -513,6 +517,18 @@ function changeGravity(dir) {
   }
 
   state.grid = applyGravity(state.grid, dir);
+
+  // ── 氷の床: 乗っていた氷から足が離れたら破壊し、上の物を再落下させる ──
+  if (prevIce && state.grid[prevIce.y] && state.grid[prevIce.y][prevIce.x] === T.ICE) {
+    const stillOn = isRestingOn(prevIce);
+    if (!stillOn) {
+      state.grid[prevIce.y][prevIce.x] = T.EMPTY;
+      spawnIceBreakParticles(prevIce);
+      state.grid = applyGravity(state.grid, dir);
+    }
+  }
+  state.standingIce = getStandingIce();
+
   updateHUD();
   updateGravArrow(false);
   spawnGravParticles(dir);
@@ -525,6 +541,40 @@ function changeGravity(dir) {
   }
 }
 
+// プレイヤーが指定タイルの真上（現在の重力基準）に乗っているか
+function isRestingOn(tile) {
+  const d = DIRS[state.gravity];
+  return state.playerPos.x + d.dx === tile.x && state.playerPos.y + d.dy === tile.y;
+}
+
+// 現在プレイヤーの足元（重力方向）にある氷タイルの座標を返す（無ければnull）
+function getStandingIce() {
+  if (state.gameOver || !state.playerPos) return null;
+  const d = DIRS[state.gravity];
+  const x = state.playerPos.x + d.dx;
+  const y = state.playerPos.y + d.dy;
+  if (y < 0 || y >= state.rows || x < 0 || x >= state.cols) return null;
+  return state.grid[y][x] === T.ICE ? { x, y } : null;
+}
+
+// 氷が砕けた時のパーティクル演出
+function spawnIceBreakParticles(tile) {
+  const cs = state.cellSize;
+  const cx = state.offsetX + tile.x * cs + cs / 2;
+  const cy = state.offsetY + tile.y * cs + cs / 2;
+  for (let i = 0; i < 10; i++) {
+    state.particles.push({
+      x: cx, y: cy,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4,
+      life: 25 + Math.random() * 15,
+      maxLife: 40,
+      color: '#bae6fd',
+      size: 1.5 + Math.random() * 2.5,
+    });
+  }
+}
+
 function checkGoal() {
   const p = state.playerPos;
   const s = getStageData(state.stage);
@@ -532,7 +582,7 @@ function checkGoal() {
     return p.x === s.doorTarget.x && p.y === s.doorTarget.y;
   }
   const cell = state.grid[p.y][p.x];
-　return (cell === T.GOAL && state.hasKey) || state.won;
+  return (cell === T.GOAL && state.hasKey) || state.won;
 }
 
 function undoMove() {
@@ -543,6 +593,7 @@ function undoMove() {
   state.gravity = h.gravity;
   state.hasKey = h.hasKey;
   state.moves = h.moves;
+  state.standingIce = h.standingIce || null;
   state.gameOver = false;
   state.won = false;
   state.usedUndoThisStage = true;

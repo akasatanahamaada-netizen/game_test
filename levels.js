@@ -191,11 +191,10 @@ function computeOptimalMoves(stageIdx) {
         const ny = pos.y + dir.dy;
         if (nx < 0 || nx >= grid[0].length || ny < 0 || ny >= grid.length) continue;
         const below = grid[ny][nx];
+        // 氷(T.ICE)は乗れる床（すり抜け不可）— 本編の物理と同一仕様
         const canFall = (below === T.EMPTY)
-          || (below === T.ICE)
           || (below === T.KEY && type === T.PLAYER)
-          || (below === T.GOAL && type === T.PLAYER && hasKey)
-          || (below === T.MUSHROOM && type === T.PLAYER);
+          || (below === T.GOAL && type === T.PLAYER && hasKey);
         if (canFall) {
           if (below === T.KEY && type === T.PLAYER) hasKey = true;
           grid[ny][nx] = type;
@@ -213,6 +212,35 @@ function computeOptimalMoves(stageIdx) {
       }
     }
     return { grid, hasKey, won, dead };
+  }
+
+  // 現在プレイヤーの足元にある氷タイル（本編の standingIce と同じ概念）
+  function standingIceLocal(grid, grav) {
+    const p = findOneLocal(grid, T.PLAYER);
+    if (!p) return null;
+    const dir = DIRS[grav];
+    const x = p.x + dir.dx, y = p.y + dir.dy;
+    if (y < 0 || y >= grid.length || x < 0 || x >= grid[0].length) return null;
+    return grid[y][x] === T.ICE ? { x, y } : null;
+  }
+
+  // 1手（重力変更）を本編と同じ順序で完全にシミュレートする:
+  // 落下 → 乗っていた氷から離れていたら破壊 → 再落下
+  function simulateMove(grid, newGrav, hasKeyIn, prevIce) {
+    let result = applyGravityLocal(grid, newGrav, hasKeyIn);
+    if (result.dead) return result;
+    if (prevIce && result.grid[prevIce.y] && result.grid[prevIce.y][prevIce.x] === T.ICE) {
+      const p = findOneLocal(result.grid, T.PLAYER);
+      const dir = DIRS[newGrav];
+      const stillOn = p && (p.x + dir.dx === prevIce.x) && (p.y + dir.dy === prevIce.y);
+      if (!stillOn) {
+        result.grid[prevIce.y][prevIce.x] = T.EMPTY;
+        const again = applyGravityLocal(result.grid, newGrav, result.hasKey);
+        again.won = again.won || result.won;
+        result = again;
+      }
+    }
+    return result;
   }
 
   function checkGoalLocal(grid, hasKey) {
@@ -239,10 +267,11 @@ function computeOptimalMoves(stageIdx) {
   while (head < queue.length && nodesVisited < MAX_NODES) {
     const cur = queue[head++];
     nodesVisited++;
+    const prevIce = standingIceLocal(cur.grid, cur.grav);
     for (const d of dirs) {
       if (d === cur.grav) continue; // 同方向への切替は無意味
       const gridCopy = cur.grid.map(r => [...r]);
-      const result = applyGravityLocal(gridCopy, d, cur.hasKey);
+      const result = simulateMove(gridCopy, d, cur.hasKey, prevIce);
       if (result.dead) continue;
       const newDepth = cur.depth + 1;
       if (result.won || checkGoalLocal(result.grid, result.hasKey)) {

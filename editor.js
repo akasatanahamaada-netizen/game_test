@@ -26,9 +26,8 @@ const EDITOR_T_INFO = {
   [T.KEY]:       { name: '鍵',       icon: '🔑', desc: '扉を開けたり、星を取るのに必要' },
   [T.DOOR]:      { name: '扉',       icon: '🚪', desc: '鍵を持っていると開く脱出用ゴール' },
   [T.SPIKE]:     { name: 'トゲ',     icon: '🔺', desc: 'プレイヤーが触れると即ゲームオーバー' },
-  [T.ICE]:       { name: '氷の床',   icon: '🧊', desc: '重力がかかると上を滑る床' },
+  [T.ICE]:       { name: '氷の床',   icon: '🧊', desc: '乗れる床。ただし一度乗って離れると砕けて消える' },
   [T.GOAL]:      { name: 'ゴール',   icon: '⭐', desc: '鍵を持った状態で触れるとステージクリア' },
-  [T.MUSHROOM]:  { name: 'キノコ',   icon: '🍄', desc: 'プレイヤーが触れて乗ることができる床' },
 };
 
 // エディタ初期化
@@ -65,6 +64,8 @@ function initEditor() {
   document.getElementById('testPlayBtn').onclick = startTestPlay;
   document.getElementById('editorCloseBtn').onclick = closeEditorAndReturnTitle;
   document.getElementById('editPanelToggleBtn').onclick = toggleEditPanel;
+  document.getElementById('saveMyStageBtn').onclick = saveMyStage;
+  renderMyStagesList();
   
   // テストプレイHUDの「エディットに戻る」ボタン
   document.getElementById('exitTestBtn').onclick = stopTestPlay;
@@ -354,7 +355,7 @@ function startTestPlay() {
   // テストプレイ用の仮ステージ情報を初期化
   const theme = THEMES_INTEGRATED[currentThemeIdx];
   
-  state.grid = deepCopy(editGrid);
+  state.grid = sanitizeGrid(deepCopy(editGrid));
   state.rows = state.grid.length;
   state.cols = state.grid[0].length;
   state.gravity = 'DOWN';
@@ -368,6 +369,7 @@ function startTestPlay() {
   
   const p = findOne(state.grid, T.PLAYER);
   state.playerPos = { x: p.x, y: p.y };
+  state.standingIce = getStandingIce();
   
   // CUSTOM_STAGE_DATA に保持し、STAGES配列自体は汚染しない
   // （汚染すると「全クリア」判定やエピローグ演出が壊れるため）
@@ -418,9 +420,169 @@ function exportStage() {
   const tx = document.getElementById('importCode');
   tx.value = code;
   tx.select();
-  navigator.clipboard.writeText(code).then(() => {
-    showOverlay('📋 コピー完了', 'ステージコードをクリップボードにコピーしました。', 'OK', () => {});
-  });
+  // クリップボードAPIはHTTPS外や一部モバイルで失敗するためフォールバックを用意
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showOverlay('📋 コピー完了', 'ステージコードをクリップボードにコピーしました。', 'OK', () => {});
+    }).catch(() => {
+      showOverlay('📋 コード生成完了', 'コピーに失敗しました。\n下のテキスト欄から手動でコピーしてください。', 'OK', () => {});
+    });
+  } else {
+    showOverlay('📋 コード生成完了', '下のテキスト欄からコードをコピーしてください。', 'OK', () => {});
+  }
+}
+
+// ================================================================
+//  マイステージ（ローカル保存 & 一覧からの再プレイ）
+// ================================================================
+const MY_STAGES_KEY = 'grimm_my_stages';
+
+function loadMyStages() {
+  try {
+    const raw = localStorage.getItem(MY_STAGES_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function persistMyStages(arr) {
+  try {
+    localStorage.setItem(MY_STAGES_KEY, JSON.stringify(arr));
+    return true;
+  } catch (e) {
+    showOverlay('❌ 保存エラー', 'ステージを保存できませんでした。\nブラウザの保存容量を確認してください。', 'OK', () => {});
+    return false;
+  }
+}
+
+// 廃止されたタイル(キノコ等)を含む古いステージデータを掃除する
+function sanitizeGrid(grid) {
+  return grid.map(row => row.map(t => (t === T.MUSHROOM ? T.EMPTY : t)));
+}
+
+// 重複しないステージ名を生成する（"名前 (2)" 形式で連番付与）
+function uniqueStageName(baseName, stages) {
+  const names = new Set(stages.map(s => s.name));
+  if (!names.has(baseName)) return baseName;
+  let n = 2;
+  while (names.has(`${baseName} (${n})`)) n++;
+  return `${baseName} (${n})`;
+}
+
+function saveMyStage() {
+  const nameInput = document.getElementById('myStageName');
+  const stages = loadMyStages();
+  let name = nameInput.value.trim();
+  if (!name) name = 'マイステージ' + (stages.length + 1);
+  name = uniqueStageName(name, stages); // 常に新規保存（同名は連番で回避）
+
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name: name,
+    theme: currentThemeIdx,
+    grid: deepCopy(editGrid),
+    updatedAt: Date.now(),
+  };
+  stages.push(entry);
+
+  if (persistMyStages(stages)) {
+    nameInput.value = '';
+    renderMyStagesList();
+    showOverlay('💾 保存完了', `「${name}」を新規保存しました。\n名前を変えるには一覧のステージ名をタップしてください。`, 'OK', () => {});
+  }
+}
+
+function renameMyStage(id) {
+  const stages = loadMyStages();
+  const s = stages.find(x => x.id === id);
+  if (!s) return;
+  const newName = prompt('新しいステージ名を入力してください', s.name);
+  if (newName === null) return; // キャンセル
+  const trimmed = newName.trim();
+  if (!trimmed || trimmed === s.name) return;
+  s.name = uniqueStageName(trimmed, stages.filter(x => x.id !== id));
+  s.updatedAt = Date.now();
+  if (persistMyStages(stages)) renderMyStagesList();
+}
+
+function renderMyStagesList() {
+  const listDiv = document.getElementById('myStagesList');
+  const stages = loadMyStages().sort((a, b) => b.updatedAt - a.updatedAt);
+  listDiv.innerHTML = '';
+  if (stages.length === 0) {
+    listDiv.innerHTML = '<div class="my-stage-empty">保存したステージはまだありません</div>';
+    return;
+  }
+  for (const s of stages) {
+    const row = document.createElement('div');
+    row.className = 'my-stage-row';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'my-stage-name';
+    nameSpan.textContent = s.name;
+    nameSpan.title = 'タップで名前を変更';
+    nameSpan.onclick = () => renameMyStage(s.id);
+
+    const playBtn = document.createElement('button');
+    playBtn.textContent = '▶';
+    playBtn.title = 'プレイ';
+    playBtn.onclick = () => playMyStage(s.id);
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.title = 'エディタに読み込む';
+    editBtn.onclick = () => loadMyStageIntoEditor(s.id);
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.title = '削除';
+    delBtn.onclick = () => deleteMyStage(s.id);
+
+    row.appendChild(nameSpan);
+    row.appendChild(playBtn);
+    row.appendChild(editBtn);
+    row.appendChild(delBtn);
+    listDiv.appendChild(row);
+  }
+  const hint = document.createElement('div');
+  hint.className = 'my-stage-hint';
+  hint.textContent = '💡 ステージ名をタップすると名前を変更できます';
+  listDiv.appendChild(hint);
+}
+
+function findMyStage(id) {
+  return loadMyStages().find(s => s.id === id) || null;
+}
+
+function loadMyStageIntoEditor(id) {
+  const s = findMyStage(id);
+  if (!s) return;
+  currentThemeIdx = s.theme || 0;
+  document.getElementById('selectTheme').value = currentThemeIdx;
+  state.stage = currentThemeIdx;
+  editGrid = sanitizeGrid(deepCopy(s.grid));
+  document.getElementById('inputCols').value = editGrid[0].length;
+  document.getElementById('inputRows').value = editGrid.length;
+  editorZoomCellSize = null;
+  fitCanvasForEditor();
+}
+
+function playMyStage(id) {
+  const s = findMyStage(id);
+  if (!s) return;
+  loadMyStageIntoEditor(id);
+  startTestPlay();
+}
+
+function deleteMyStage(id) {
+  const s = findMyStage(id);
+  if (!s) return;
+  if (!confirm(`「${s.name}」を削除しますか？`)) return;
+  const stages = loadMyStages().filter(x => x.id !== id);
+  persistMyStages(stages);
+  renderMyStagesList();
 }
 
 // インポート
@@ -434,7 +596,7 @@ function importStage() {
     if (stageData.theme !== undefined && Array.isArray(stageData.grid)) {
       currentThemeIdx = stageData.theme;
       document.getElementById('selectTheme').value = currentThemeIdx;
-      editGrid = stageData.grid;
+      editGrid = sanitizeGrid(stageData.grid);
       
       const c = editGrid[0].length;
       const r = editGrid.length;

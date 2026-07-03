@@ -1341,6 +1341,76 @@ kbd {
   transform: translateY(1px);
 }
 
+/* ── マイステージ ── */
+.my-stage-save-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.my-stage-save-row input {
+  flex: 1;
+  min-width: 0;
+}
+.my-stage-save-row .action-btn {
+  width: auto;
+  white-space: nowrap;
+  padding: 6px 10px;
+}
+#myStagesList {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.my-stage-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 6px;
+}
+.my-stage-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #e9d5ff;
+  cursor: pointer;
+  text-decoration: underline dotted rgba(216, 180, 254, 0.4);
+  text-underline-offset: 3px;
+}
+.my-stage-name:hover { color: #f5d0fe; }
+.my-stage-hint {
+  font-size: 10px;
+  color: #9ca3af;
+  padding: 4px 2px 0;
+}
+.my-stage-row button {
+  background: transparent;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 5px;
+  color: #d8b4fe;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+.my-stage-row button:hover {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.15);
+}
+.my-stage-empty {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 8px 0;
+}
+
 .import-area {
   margin-top: 10px;
   display: flex;
