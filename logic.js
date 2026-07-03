@@ -37,6 +37,7 @@ let state = {
   hasSeenEpilogue: false,
   isEditorMode: false,
   isTestPlay: false,
+  isOnlinePlay: false,   // オンライン公開ステージをプレイ中か（テストプレイと異なりタイトルへ戻す）
   standingIce: null,      // プレイヤーが現在乗っている氷タイル座標（離れたら破壊）
 };
 
@@ -672,7 +673,13 @@ function showOverlay(title, text, btn, cb, showShop = false, showTitleBtn = fals
   const tb = document.getElementById('overlayTitleBtn');
   if (showTitleBtn) {
     tb.classList.remove('hidden');
-    if (state.isTestPlay) {
+    if (state.isOnlinePlay) {
+      tb.textContent = '🏠 タイトルへ戻る';
+      tb.onclick = () => {
+        ov.classList.add('hidden');
+        stopOnlinePlay();
+      };
+    } else if (state.isTestPlay) {
       tb.textContent = '🛠️ エディタに戻る';
       tb.onclick = () => {
         ov.classList.add('hidden');
@@ -693,7 +700,16 @@ function showOverlay(title, text, btn, cb, showShop = false, showTitleBtn = fals
 }
 
 function showDeath() {
-  if (state.isTestPlay) {
+  if (state.isOnlinePlay) {
+    showOverlay(
+      '💀 やられた…',
+      'トゲに触れてしまった。\nもう一度挑戦してみよう。',
+      'もう一度挑戦',
+      () => loadStage(state.stage),
+      false,
+      true
+    );
+  } else if (state.isTestPlay) {
     showOverlay(
       '💀 やられた…',
       'トゲに触れてしまった。\nもう一度挑戦するか、エディタに戻って修正しましょう。',
@@ -775,6 +791,16 @@ function startStageWithIntro(idx) {
 }
 
 function showVictory() {
+  if (state.isOnlinePlay) {
+    const cleared = getStageData(state.stage);
+    showOverlay(
+      '🎉 クリア！',
+      `「${cleared ? cleared.name : 'ステージ'}」をクリアしました！\n手数は ${state.moves} 手でした。`,
+      'タイトルへ戻る',
+      () => stopOnlinePlay()
+    );
+    return;
+  }
   if (state.isTestPlay) {
     showOverlay(
       '🎉 テストクリア！',
@@ -983,6 +1009,7 @@ function goToTitle() {
   state.gameStarted = false;
   state.isEditorMode = false;
   state.isTestPlay = false;
+  state.isOnlinePlay = false;
   renderStageSelect();
 }
 

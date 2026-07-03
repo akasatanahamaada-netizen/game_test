@@ -345,11 +345,15 @@ function startTestPlay() {
   // UI切り替え
   document.getElementById('editPanel').classList.add('hidden');
   document.getElementById('editPanelToggleBtn').classList.add('hidden');
-  document.getElementById('exitTestBtn').classList.remove('hidden');
+  const etb = document.getElementById('exitTestBtn');
+  etb.textContent = '🛠️ エディットに戻る';
+  etb.onclick = stopTestPlay;
+  etb.classList.remove('hidden');
   document.getElementById('titleBtn').classList.add('hidden');
   document.getElementById('touchControls').classList.remove('hidden');
-  
+
   state.isTestPlay = true;
+  state.isOnlinePlay = false;
   state.gameStarted = true;
   
   // テストプレイ用の仮ステージ情報を初期化
@@ -535,6 +539,11 @@ function renderMyStagesList() {
     editBtn.title = 'エディタに読み込む';
     editBtn.onclick = () => loadMyStageIntoEditor(s.id);
 
+    const publishBtn = document.createElement('button');
+    publishBtn.textContent = '🌐';
+    publishBtn.title = 'オンラインに公開';
+    publishBtn.onclick = () => publishStageOnline(s.id);
+
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
     delBtn.title = '削除';
@@ -543,6 +552,7 @@ function renderMyStagesList() {
     row.appendChild(nameSpan);
     row.appendChild(playBtn);
     row.appendChild(editBtn);
+    row.appendChild(publishBtn);
     row.appendChild(delBtn);
     listDiv.appendChild(row);
   }

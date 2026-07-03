@@ -92,7 +92,14 @@
         </div>
         <div id="myStagesList"></div>
       </div>
-      
+
+      <div class="panel-section">
+        <div class="panel-title">6. オンライン共有</div>
+        <label>投稿者名（表示名）</label>
+        <input type="text" id="onlineAuthorName" maxlength="16" placeholder="名無し">
+        <div class="online-hint">💡 上の「マイステージ」一覧の🌐ボタンから、保存したステージをオンラインに公開できます。公開したステージはタイトル画面の「🌐 みんなのステージ」から誰でもプレイできます。</div>
+      </div>
+
       <div class="panel-section action-section">
         <button id="testPlayBtn" class="action-btn mode-btn">⚔️ テストプレイ</button>
         <button id="editorCloseBtn" class="action-btn close-btn">🏠 タイトルへ</button>
@@ -128,6 +135,21 @@
       <div id="codexReward"></div>
       <div id="codexGrid"></div>
       <button id="codexCloseBtn">閉じる</button>
+    </div>
+  </div>
+  <div id="onlineScreen" class="hidden">
+    <div id="onlineBox">
+      <div id="onlineHeader">
+        <div id="onlineTitle">🌐 みんなのステージ</div>
+        <div id="onlineTabs">
+          <button id="onlineTabNew" class="online-tab active">🆕 新着</button>
+          <button id="onlineTabPopular" class="online-tab">❤️ 人気</button>
+        </div>
+      </div>
+      <div id="onlineStatus"></div>
+      <div id="onlineGrid"></div>
+      <button id="onlineLoadMoreBtn" class="online-loadmore-btn hidden">もっと見る</button>
+      <button id="onlineCloseBtn">閉じる</button>
     </div>
   </div>
   <div id="storyScreen" class="hidden">
@@ -173,6 +195,7 @@
           <div id="stageSelectGrid"></div>
         </div>
         <div id="subButtonRow">
+          <button id="onlineBtn">🌐 みんなのステージ</button>
           <button id="shopBtn">🛍️ スキンショップ</button>
           <button id="codexBtn">📜 称号図鑑</button>
         </div>
@@ -192,11 +215,18 @@
       3. renderer.js — canvas / ctx / render 系を定義（logic.js が呼び出す）
       4. logic.js    — state / gameLoop など。levels & renderer & story に依存
       5. editor.js   — ステージエディタのロジック
+      6. Firebase SDK + firebase-config.js — オンライン共有のバックエンド接続設定
+      7. online.js   — 「みんなのステージ」(オンライン共有・公開・プレイ)のロジック
   -->
   <script src="levels.js"></script>
   <script src="story.js"></script>
   <script src="renderer.js"></script>
   <script src="logic.js"></script>
   <script src="editor.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="online.js"></script>
 </body>
 </html>

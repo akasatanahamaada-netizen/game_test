@@ -693,6 +693,225 @@ kbd {
 }
 #codexCloseBtn:hover { border-color: #a855f7; color: #c084fc; }
 
+/* ── Online button on title ── */
+#onlineBtn {
+  background: #f3e3bf88;
+  border: 1px solid #8a6a3c;
+  color: #4a2f12;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 13.5px;
+  padding: 9px 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s, border-color 0.15s;
+}
+#onlineBtn:hover { background: #f3e3bfdd; border-color: #4a2f12; }
+
+/* ── Online Screen (みんなのステージ) ── */
+#onlineScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0a051099;
+  backdrop-filter: blur(6px);
+  z-index: 300;
+}
+#onlineScreen.hidden { display: none; }
+
+#onlineBox {
+  background: linear-gradient(135deg, #1e0d3e, #2d1654);
+  border: 2px solid #7c3aed;
+  border-radius: 20px;
+  padding: 32px 40px;
+  width: min(760px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 0 80px #7c3aed55;
+}
+
+#onlineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#onlineTitle {
+  font-size: 22px;
+  color: #f0abfc;
+  letter-spacing: 2px;
+}
+
+#onlineTabs {
+  display: flex;
+  gap: 8px;
+}
+
+.online-tab {
+  background: transparent;
+  border: 1px solid #5a3a7e;
+  color: #a78bfa;
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.online-tab:hover { border-color: #a855f7; color: #e879f9; }
+.online-tab.active {
+  background: #7c3aed;
+  border-color: #fbbf24;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+}
+
+#onlineStatus {
+  font-size: 13px;
+  color: #c4b5fd;
+  text-align: center;
+  white-space: pre-line;
+  padding: 8px 0;
+  min-height: 1px;
+}
+
+#onlineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.online-stage-card {
+  background: #321a5e;
+  border: 1.5px solid #6d4fa0;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.online-stage-card:hover { border-color: #a855f7; transform: translateY(-2px); }
+
+.online-stage-theme {
+  padding: 8px 12px;
+  font-size: 10.5px;
+  color: #f4ecff;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px #00000088;
+}
+
+.online-stage-body {
+  padding: 12px 14px 6px;
+  flex: 1;
+}
+
+.online-stage-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fde9b8;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.online-stage-meta {
+  font-size: 11.5px;
+  color: #c4b5fd;
+  margin-bottom: 4px;
+}
+
+.online-stage-stats {
+  font-size: 11.5px;
+  color: #9ca3af;
+}
+
+.online-stage-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 14px;
+}
+
+.online-play-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: bold;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.online-play-btn:hover { transform: scale(1.04); box-shadow: 0 0 14px #a855f766; }
+
+.online-like-btn, .online-del-btn {
+  background: transparent;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 8px;
+  color: #d8b4fe;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.online-like-btn:hover, .online-del-btn:hover {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.15);
+}
+.online-like-btn.liked {
+  border-color: #f472b6;
+  background: rgba(244, 114, 182, 0.18);
+}
+.online-like-btn:disabled { opacity: 0.6; cursor: default; }
+
+.online-loadmore-btn {
+  display: block;
+  margin: 0 auto 20px;
+  background: transparent;
+  border: 1px solid #6d4fa0;
+  color: #c4b5fd;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.online-loadmore-btn:hover { border-color: #a855f7; color: #e879f9; }
+.online-loadmore-btn.hidden { display: none; }
+
+#onlineCloseBtn {
+  display: block;
+  margin: 0 auto;
+  background: transparent;
+  border: 1px solid #5a3a7e;
+  color: #a78bfa;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+#onlineCloseBtn:hover { border-color: #a855f7; color: #c084fc; }
+
+/* ── エディタ内「オンライン共有」パネルの説明文 ── */
+.online-hint {
+  font-size: 10.5px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
 /* ── Overlay title return button ── */
 #overlayTitleBtn {
   background: transparent;
@@ -1047,7 +1266,7 @@ kbd {
   .ss-icon { font-size: 17px; }
 
   #subButtonRow { gap: 8px; margin-bottom: 18px; }
-  #shopBtn, #codexBtn {
+  #onlineBtn, #shopBtn, #codexBtn {
     font-size: 11.5px;
     padding: 7px 14px;
   }
@@ -1082,14 +1301,20 @@ kbd {
    Shop / Codex modals — mobile responsive
    ================================================================ */
 @media (max-width: 600px) {
-  #shopBox, #codexBox {
+  #shopBox, #codexBox, #onlineBox {
     padding: 22px 18px;
     width: 94vw;
     max-height: 90vh;
   }
-  #shopHeader, #codexHeader { margin-bottom: 16px; }
-  #shopTitle, #codexTitle { font-size: 17px; }
+  #shopHeader, #codexHeader, #onlineHeader { margin-bottom: 16px; }
+  #shopTitle, #codexTitle, #onlineTitle { font-size: 17px; }
   #shopCoins, #codexProgress { font-size: 12px; }
+
+  #onlineGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
 
   #shopGrid, #codexGrid {
     grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
@@ -1295,6 +1520,7 @@ kbd {
 }
 
 #editPanel input[type="number"],
+#editPanel input[type="text"],
 #editPanel select,
 #editPanel textarea {
   width: 100%;
@@ -1309,6 +1535,7 @@ kbd {
 }
 
 #editPanel input[type="number"]:focus,
+#editPanel input[type="text"]:focus,
 #editPanel select:focus,
 #editPanel textarea:focus {
   outline: none;

@@ -1,0 +1,40 @@
+// ================================================================
+//  firestore.rules — 「みんなのステージ」用の Firestore セキュリティルール
+//
+//  Firebaseコンソールの Firestore Database > ルール タブに、この内容を
+//  貼り付けて公開してください。
+//
+//  方針:
+//   - 誰でも公開ステージを閲覧できる（read）
+//   - 投稿(create)には匿名認証が必須。plays/likesは必ず0から開始
+//   - 更新(update)は plays / likes の増加のみ許可（改ざん防止）
+//   - 削除(delete)は投稿者本人（同じ匿名認証uid）のみ許可
+// ================================================================
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /stages/{stageId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() <= 16
+        && request.resource.data.gridData is string
+        && request.resource.data.gridData.size() <= 20000
+        && request.resource.data.theme is int
+        && request.resource.data.plays == 0
+        && request.resource.data.likes == 0;
+
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'plays'])
+        && request.resource.data.likes >= resource.data.likes
+        && request.resource.data.plays >= resource.data.plays;
+
+      allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
+    }
+  }
+}
