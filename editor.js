@@ -9,6 +9,34 @@ let currentThemeIdx = 0;
 let isDrawing = false;
 let CUSTOM_STAGE_DATA = null;
 
+// ── 編集履歴（「ひとつ前に戻す」ボタン用） ──
+let editHistory = [];
+const EDIT_HISTORY_MAX = 50;
+
+// 変更を加える直前に、その時点のグリッドを履歴に積む
+function pushEditHistory() {
+  editHistory.push(deepCopy(editGrid));
+  if (editHistory.length > EDIT_HISTORY_MAX) editHistory.shift();
+  updateUndoButtonState();
+}
+
+// 履歴をひとつ戻して、直前の状態を復元する
+function undoEdit() {
+  if (!state.isEditorMode || state.isTestPlay) return;
+  if (editHistory.length === 0) return;
+  editGrid = editHistory.pop();
+  document.getElementById('inputCols').value = editGrid[0].length;
+  document.getElementById('inputRows').value = editGrid.length;
+  editorZoomCellSize = null;
+  fitCanvasForEditor();
+  updateUndoButtonState();
+}
+
+function updateUndoButtonState() {
+  const btn = document.getElementById('editUndoBtn');
+  if (btn) btn.disabled = editHistory.length === 0;
+}
+
 // ── ズーム関連の状態 ──
 let editorZoomCellSize = null; // null = 自動フィット、数値 = ユーザーが指定した拡大率(px/セル)
 let pinchStartDist = null;
@@ -65,6 +93,7 @@ function initEditor() {
   document.getElementById('editorCloseBtn').onclick = closeEditorAndReturnTitle;
   document.getElementById('editPanelToggleBtn').onclick = toggleEditPanel;
   document.getElementById('saveMyStageBtn').onclick = saveMyStage;
+  document.getElementById('editUndoBtn').onclick = undoEdit;
   renderMyStagesList();
   
   // テストプレイHUDの「エディットに戻る」ボタン
@@ -128,11 +157,14 @@ function setupInitialGrid(c, r) {
     editGrid.push(row);
   }
   editorZoomCellSize = null;
+  editHistory = [];
+  updateUndoButtonState();
   fitCanvasForEditor();
 }
 
 function resizeGrid() {
   if (!state.isEditorMode) return;
+  pushEditHistory();
   const newCols = parseInt(document.getElementById('inputCols').value) || 10;
   const newRows = parseInt(document.getElementById('inputRows').value) || 8;
   
@@ -288,6 +320,7 @@ function getGridCoords(e) {
 
 function startDraw(e) {
   if (!state.isEditorMode || state.isTestPlay) return;
+  pushEditHistory();
   isDrawing = true;
   doDraw(e);
 }
@@ -576,6 +609,8 @@ function loadMyStageIntoEditor(id) {
   document.getElementById('inputCols').value = editGrid[0].length;
   document.getElementById('inputRows').value = editGrid.length;
   editorZoomCellSize = null;
+  editHistory = [];
+  updateUndoButtonState();
   fitCanvasForEditor();
 }
 
@@ -604,6 +639,7 @@ function importStage() {
     const stageData = JSON.parse(jsonStr);
     
     if (stageData.theme !== undefined && Array.isArray(stageData.grid)) {
+      pushEditHistory();
       currentThemeIdx = stageData.theme;
       document.getElementById('selectTheme').value = currentThemeIdx;
       editGrid = sanitizeGrid(stageData.grid);

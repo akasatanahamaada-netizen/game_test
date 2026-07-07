@@ -1568,6 +1568,15 @@ kbd {
   transform: translateY(1px);
 }
 
+#editPanel .action-btn:disabled {
+  background: linear-gradient(135deg, #4c3a63, #382a4d);
+  border-color: #5a3a7e;
+  color: #8a7aa3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* ── マイステージ ── */
 .my-stage-save-row {
   display: flex;

@@ -153,8 +153,10 @@ function getStageData(idx) {
 const STAGE_TIME_LIMITS = [20, 25, 35, 30, 40];
 
 // BFSで最短重力切替回数を求める（称号判定の基準値として使用）
-function computeOptimalMoves(stageIdx) {
-  const s = STAGES[stageIdx];
+// stageData には { grid, doorTarget } を持つオブジェクトを渡す
+// （STAGES[i] だけでなく、エディタで作成したカスタムステージにも使えるようにする）
+function computeOptimalMovesForData(stageData) {
+  const s = stageData;
   const startGrid = s.grid.map(r => [...r]);
   const rows = startGrid.length, cols = startGrid[0].length;
 
@@ -287,9 +289,28 @@ function computeOptimalMoves(stageIdx) {
   return null; // 計算不能/到達不可
 }
 
+// 従来どおり STAGES[idx] を対象に計算する版（後方互換のためのラッパー）
+function computeOptimalMoves(stageIdx) {
+  return computeOptimalMovesForData(STAGES[stageIdx]);
+}
+
 // 各ステージの最短手数キャッシュ（遅延計算）
 const _optimalMovesCache = {};
+
+// カスタムステージ（エディタのテストプレイ・オンラインプレイ）用の
+// 最短手数キャッシュ。グリッド内容が変わるたびに再計算する。
+let _customOptimalCache = { key: null, value: null };
+
 function getOptimalMoves(stageIdx) {
+  if (stageIdx === TEST_STAGE_INDEX) {
+    const data = getStageData(stageIdx);
+    if (!data) return null;
+    const key = JSON.stringify(data.grid) + '|' + JSON.stringify(data.doorTarget || null);
+    if (_customOptimalCache.key !== key) {
+      _customOptimalCache = { key, value: computeOptimalMovesForData(data) };
+    }
+    return _customOptimalCache.value;
+  }
   if (!(stageIdx in _optimalMovesCache)) {
     _optimalMovesCache[stageIdx] = computeOptimalMoves(stageIdx);
   }

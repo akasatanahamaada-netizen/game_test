@@ -790,12 +790,23 @@ function startStageWithIntro(idx) {
   }
 }
 
+// カスタムステージ（テストプレイ・オンラインプレイ）クリア時の
+// 「最短手数」に関する追加メッセージを組み立てる
+function buildOptimalMovesText() {
+  const optimal = getOptimalMoves(state.stage);
+  if (optimal === null) return '';
+  if (state.moves <= optimal) {
+    return `\n🏆 最短手数（${optimal}手）でクリア！お見事！`;
+  }
+  return `\n最短手数は ${optimal} 手でした。`;
+}
+
 function showVictory() {
   if (state.isOnlinePlay) {
     const cleared = getStageData(state.stage);
     showOverlay(
       '🎉 クリア！',
-      `「${cleared ? cleared.name : 'ステージ'}」をクリアしました！\n手数は ${state.moves} 手でした。`,
+      `「${cleared ? cleared.name : 'ステージ'}」をクリアしました！\n手数は ${state.moves} 手でした。${buildOptimalMovesText()}`,
       'タイトルへ戻る',
       () => stopOnlinePlay()
     );
@@ -804,7 +815,7 @@ function showVictory() {
   if (state.isTestPlay) {
     showOverlay(
       '🎉 テストクリア！',
-      'あなたが作成したステージをクリアできました！\n手数は ' + state.moves + ' 手でした。',
+      'あなたが作成したステージをクリアできました！\n手数は ' + state.moves + ' 手でした。' + buildOptimalMovesText(),
       'エディタに戻る',
       () => {
         stopTestPlay();
